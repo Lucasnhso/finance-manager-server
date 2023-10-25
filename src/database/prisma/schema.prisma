@@ -1,0 +1,25 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Salary {
+  id               String   @id @default(uuid())
+  externalId       String   @unique @map("external_id")
+  type             String
+  paymentReference String   @map("payment_reference")
+  paymentDate      DateTime @map("payment_date")
+  reportLink       String   @unique @map("report_link")
+  currency         String
+  referenceSalary  Float    @map("reference_salary")
+  receivedValue    Float    @map("received_value")
+  advanceValue     Float    @map("advance_value")
+  discounts        Json
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@map("salary")
+}
