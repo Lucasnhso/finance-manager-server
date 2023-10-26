@@ -1,5 +1,8 @@
+import dayjs from "dayjs";
 import { prismaClient } from "../../database";
+import { sendMail } from "../../helpers/sendMail";
 import { findPayroll } from "../../integrations/senior/findPayroll";
+import { formatCurrency } from "../../utils/formatCurrency";
 
 interface Payroll {
   id: string;
@@ -81,7 +84,43 @@ export async function extractSalary() {
     (salary) => !bdSalaries.find((e) => e.externalId === salary.externalId)
   );
 
-  await prismaClient.salary.createMany({ data: newSalaries });
+  if (newSalaries.length) {
+    await prismaClient.salary.createMany({ data: newSalaries });
+    await sendMail({
+      to: "lucasnhso@gmail.com",
+      subject: `Salario recebido`,
+      html: `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <title>Relatório de Salários</title>
+        </head>
+        <body>
+          <div style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; width: 80%; margin: auto;">
+            <h2>Salários Recebidos</h2>
+            ${newSalaries.map(
+              (e) => `
+              <div style="background: #fff; padding: 20px; margin: 20px 0; border-radius: 5px;">
+                <p style="font-weight: bold; white-space: nowrap;">Data do Pagamento: ${dayjs(
+                  e.paymentDate
+                ).format("DD/MM/YYYY")}</p>
+                <p>Valor Bruto: ${formatCurrency(e.referenceSalary)}</p>
+                <p>Valor Recebido: ${formatCurrency(e.receivedValue)}</p>
+                <p>Valor Adiantamento: ${formatCurrency(e.advanceValue)}</p>
+                <p>Mês Referente: ${dayjs(e.paymentReference).format(
+                  "MMMM YYYY"
+                )}</p>
+              </div>
+            `
+            )}
+          </div>
+        </body>
+        </html>
+      `,
+    });
+  }
 
   console.log("Ended extract salary");
 }

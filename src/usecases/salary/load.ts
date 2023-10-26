@@ -12,7 +12,7 @@ export async function loadSalary() {
       ...item,
       receivedValue: item.receivedValue + item.advanceValue,
       discountTotal,
-      discounts: undefined,
+      // discounts: undefined,
     };
   });
   return treatedData;
