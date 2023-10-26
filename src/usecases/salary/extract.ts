@@ -3,45 +3,13 @@ import { prismaClient } from "../../database";
 import { sendMail } from "../../helpers/sendMail";
 import { findPayroll } from "../../integrations/senior/findPayroll";
 import { formatCurrency } from "../../utils/formatCurrency";
-
-interface Payroll {
-  id: string;
-  graphic: {
-    name: string;
-    data: number[];
-  }[];
-  calculation: {
-    paymentReference: string;
-    paymentDate: string;
-    reportLink: string;
-    type: string;
-  };
-  currency: string;
-  referenceSalary: number;
-  netValue: number;
-}
-
-interface Salary {
-  externalId: string;
-  paymentReference: string;
-  paymentDate: Date;
-  reportLink: string;
-  currency: string;
-  referenceSalary: number;
-  receivedValue: number;
-  advanceValue: number;
-  discounts: {
-    name: string;
-    value: number;
-  }[];
-  type: string;
-}
+import { Payroll } from "../../entities/Payroll";
+import { Salary } from "../../entities/Salary";
 
 export async function extractSalary() {
   console.log("Starting extract salary");
 
   const payroll: Payroll[] = await findPayroll();
-
   const salaryRes: Salary[] = payroll.map((item) => {
     const advanceValue = item.graphic.find(
       (e: { name: string }) => e.name === "Desc.Adto Salarial"
