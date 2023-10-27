@@ -3,6 +3,6 @@ import salaryController from "./controllers/salary";
 
 const routes = express.Router();
 
-routes.get("/salaries", salaryController.find);
+// routes.get("/salaries", salaryController.find);
 
 export default routes;
